@@ -14,7 +14,6 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("PEA")
         self.setup_ui()
-        self.setup_connections()
         self.setup_css()
 
         self.stocks_layout = {}
@@ -45,18 +44,14 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(self.header)
 
-    def setup_connections(self):
-        #self.btn_inverser.clicked.connect(self.reverse_currencies)
-        pass
 
     def setup_css(self):
-        return
         self.setStyleSheet("""
         border: 1px solid black;
         """)
 
     def show_all_stocks(self):
-        self.stocks = stock.load_stocks(2)
+        self.stocks = stock.load_stocks()
 
         for s in self.stocks:
             l = self.stocks_layout.get(s.code)
