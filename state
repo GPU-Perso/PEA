@@ -1,0 +1,13 @@
+#!/bin/bash
+# This script will show pea state regularly
+# Accepts one parameter: intervall in seconds
+# Usage: ./state 30
+
+while true
+do
+    echo "******************************"
+    echo "***          PEA           ***"
+    echo "******************************"
+    python3 stock.py
+    sleep $1
+done
