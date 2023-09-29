@@ -26,7 +26,15 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
 
+        layout = QHBoxLayout()
+        self.main_layout.addLayout(layout)
+        widget = QWidget()
+        widget.setStyleSheet("""font-weight: bold;
+        """)
+        layout.addWidget(widget)
+
         self.header = QHBoxLayout()
+        widget.setLayout(self.header)
         self.header.addWidget(ui_utils.create_label(text="Name", width=200))
         self.header.addWidget(ui_utils.create_label(text="Buy price", width=80))
         self.header.addWidget(ui_utils.create_label(text="Buy gap", width=80))
@@ -38,16 +46,11 @@ class MainWindow(QMainWindow):
 
         self.btn_show_all_stocks = QPushButton("Reload")
         self.btn_show_all_stocks.setFixedWidth(100)
-        self.btn_show_all_stocks.clicked.connect(self.show_all_stocks)
-        
+        self.btn_show_all_stocks.clicked.connect(self.show_all_stocks)    
         self.header.addWidget(self.btn_show_all_stocks)
-
-        self.main_layout.addLayout(self.header)
-
 
     def setup_css(self):
         self.setStyleSheet("""
-        border: 1px solid black;
         """)
 
     def show_all_stocks(self):
@@ -72,6 +75,8 @@ class MainWindow(QMainWindow):
             stock_line.addWidget(self.stocks_layout[s.code+"_label_buy_price"])
 
             self.stocks_layout[s.code+"_label_buy_price_gap"] = ui_utils.create_label(text=f"{s.buy_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
+            if s.buy_price_gap > -.05:
+                self.stocks_layout[s.code+"_label_buy_price_gap"].setStyleSheet("color: red;")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_buy_price_gap"])
 
             self.stocks_layout[s.code+"_label_last_price"] = ui_utils.create_label(text=str(s.last_price), width=80, alignment=Qt.AlignRight, format=":.2f")
@@ -81,6 +86,8 @@ class MainWindow(QMainWindow):
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price"])
 
             self.stocks_layout[s.code+"_label_sell_price_gap"] = ui_utils.create_label(text=f"{s.sell_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
+            if s.sell_price_gap < .05:
+                self.stocks_layout[s.code+"_label_buy_price_gap"].setStyleSheet("color: green;")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price_gap"])
 
             self.stocks_layout[s.code+"_label_nb"] = ui_utils.create_label(text=str(s.nb), width=50, alignment=Qt.AlignRight)
@@ -91,6 +98,7 @@ class MainWindow(QMainWindow):
 
             btn = QPushButton("Reload")
             btn.clicked.connect(lambda *args, s=s: self.reload_stock(s))
+            btn.setFixedWidth(100)
             stock_line.addWidget(btn)
             self.stocks_layout[s.code+"_button_reload"] = btn
 
