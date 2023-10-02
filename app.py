@@ -75,8 +75,6 @@ class MainWindow(QMainWindow):
             stock_line.addWidget(self.stocks_layout[s.code+"_label_buy_price"])
 
             self.stocks_layout[s.code+"_label_buy_price_gap"] = ui_utils.create_label(text=f"{s.buy_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
-            if s.buy_price_gap > -.05:
-                self.stocks_layout[s.code+"_label_buy_price_gap"].setStyleSheet("color: red;")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_buy_price_gap"])
             ui_utils.colorize_label(self.stocks_layout[s.code+"_label_buy_price_gap"], value=s.buy_price_gap, max=-0.05, color="red")
 
@@ -87,8 +85,6 @@ class MainWindow(QMainWindow):
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price"])
 
             self.stocks_layout[s.code+"_label_sell_price_gap"] = ui_utils.create_label(text=f"{s.sell_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
-            if s.sell_price_gap < .05:
-                self.stocks_layout[s.code+"_label_buy_price_gap"].setStyleSheet("color: green;")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price_gap"])
             ui_utils.colorize_label(self.stocks_layout[s.code+"_label_sell_price_gap"], value=s.sell_price_gap, min=0.05, color="green")
 
