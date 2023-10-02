@@ -73,6 +73,7 @@ class MainWindow(QMainWindow):
 
             self.stocks_layout[s.code+"_label_buy_price_gap"] = ui_utils.create_label(text=f"{s.buy_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
             stock_line.addWidget(self.stocks_layout[s.code+"_label_buy_price_gap"])
+            ui_utils.colorize_label(self.stocks_layout[s.code+"_label_buy_price_gap"], value=s.buy_price_gap, max=-0.05, color="red")
 
             self.stocks_layout[s.code+"_label_last_price"] = ui_utils.create_label(text=str(s.last_price), width=80, alignment=Qt.AlignRight, format=":.2f")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_last_price"])
@@ -82,6 +83,7 @@ class MainWindow(QMainWindow):
 
             self.stocks_layout[s.code+"_label_sell_price_gap"] = ui_utils.create_label(text=f"{s.sell_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price_gap"])
+            ui_utils.colorize_label(self.stocks_layout[s.code+"_label_sell_price_gap"], value=s.sell_price_gap, min=0.05, color="green")
 
             self.stocks_layout[s.code+"_label_nb"] = ui_utils.create_label(text=str(s.nb), width=50, alignment=Qt.AlignRight)
             stock_line.addWidget(self.stocks_layout[s.code+"_label_nb"])

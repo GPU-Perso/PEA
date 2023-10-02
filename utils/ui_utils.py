@@ -23,3 +23,11 @@ def clear_layout(layout):
             child.widget().deleteLater()
         elif child.layout() is not None:
             clear_layout(child.layout())
+
+def colorize_label(label: QLabel, color, value=None, min=None, max=None):
+    if not value or not min and not max:
+        return
+    if min and value < min or max and value > max:
+        label.setStyleSheet(f"color: {color};")
+    else:
+        label.setStyleSheet(f"color: black;")
