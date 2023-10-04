@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         self.stocks_layout[s.code+"_label_buy_price_gap"].setText(f"{s.buy_price_gap*100:.2f}%")
         self.stocks_layout[s.code+"_label_sell_price_gap"].setText(f"{s.sell_price_gap*100:.2f}%")
         self.stocks_layout[s.code+"_label_total_price"].setText(f"{s.total_price:.2f}")
+        self.stocks_layout[s.code+"_label_nb"].setText(str(s.nb))
   
 app = QApplication(sys.argv)
 w = MainWindow()
