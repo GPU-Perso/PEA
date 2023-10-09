@@ -3,7 +3,7 @@ import utils.ui_utils as ui_utils
 from PySide2.QtWidgets import (
     QMainWindow, QApplication, QBoxLayout, QHBoxLayout, QVBoxLayout, QWidget,
     QLabel, QCheckBox, QComboBox, QListWidget, QLineEdit,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QPushButton
+    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QPushButton, QDialog
 )
 from PySide2.QtCore import Qt
 import stock
@@ -49,12 +49,16 @@ class MainWindow(QMainWindow):
         self.btn_show_all_stocks.clicked.connect(self.show_all_stocks)    
         self.header.addWidget(self.btn_show_all_stocks)
 
+        self.btn_edit_stock = QPushButton("+")
+        self.btn_edit_stock.clicked.connect(lambda *args, id=None: self.edit_stock(id))
+        self.header.addWidget(self.btn_edit_stock)
+
     def setup_css(self):
         self.setStyleSheet("""
         """)
 
     def show_all_stocks(self):
-        self.stocks = stock.load_stocks()
+        self.stocks = stock.load_stocks(2)
 
         for s in self.stocks:
             l = self.stocks_layout.get(s.code)
@@ -108,6 +112,83 @@ class MainWindow(QMainWindow):
         self.stocks_layout[s.code+"_label_total_price"].setText(f"{s.total_price:.2f}")
         self.stocks_layout[s.code+"_label_nb"].setText(str(s.nb))
   
+    def edit_stock(self, code=None):
+        edit_window = EditWindow(code)
+        edit_window.setWindowTitle("Edit stock")
+        #edit_window.setGeometry(100, 100, 400, 200)  # Définir la position et la taille de la fenêtre
+        edit_window.exec()
+
+class EditWindow(QDialog):
+    def __init__(self, code):
+        super(EditWindow, self).__init__()
+        self.stock = stock.Stock(code)
+
+        layout = QVBoxLayout()
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(QLabel("Code"))
+        self.edit_code = QLineEdit(self.stock.code)
+        line_layout.addWidget(self.edit_code)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(QLabel("Name"))
+        self.edit_name = QLineEdit(self.stock.name)
+        line_layout.addWidget(self.edit_name)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        label = QLabel("Active")
+        line_layout.addWidget(label)
+        self.checkbox_active = QCheckBox(label)
+        self.checkbox_active.setChecked(self.stock.active)
+        line_layout.addWidget(self.checkbox_active)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(QLabel("Nombre"))
+        self.edit_nb = QLineEdit(str(self.stock.nb))
+        line_layout.addWidget(self.edit_nb)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(QLabel("Buy price"))
+        self.edit_buy_price = QLineEdit(str(self.stock.buy_price))
+        line_layout.addWidget(self.edit_buy_price)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(QLabel("Sell price"))
+        self.edit_sell_price = QLineEdit(str(self.stock.sell_price))
+        line_layout.addWidget(self.edit_sell_price)
+        layout.addLayout(line_layout)
+
+        line_layout = QHBoxLayout()
+        self.button_save = QPushButton("Save")
+        self.button_save.clicked.connect(self.save)
+        line_layout.addWidget(self.button_save)
+        self.button_cancel = QPushButton("Cancel")
+        self.button_cancel.clicked.connect(self.close)
+        line_layout.addWidget(self.button_cancel)
+        layout.addLayout(line_layout)
+
+        self.setLayout(layout)
+
+    def save(self):
+        if not self.stock.code and not self.edit_code.text():
+            return
+        if not self.stock.code:
+            self.stock.code = self.edit_code.text()
+            self.stock.load()
+        
+        self.stock.name = self.edit_name.text()
+        self.stock.active = self.checkbox_active.isChecked()
+        self.stock.nb = self.edit_nb.text()
+        self.stock.buy_price = self.edit_buy_price.text()
+        self.stock.sell_price = self.edit_sell_price.text()
+
+        self.stock.store()
+
 app = QApplication(sys.argv)
 w = MainWindow()
 w.show()

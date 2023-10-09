@@ -7,10 +7,10 @@ database = Database(host="localhost", database="pea_tomtom", user="postgres", pa
 class Stock:
     def __init__(self, code = "") -> None:
         self.code = code
-        self.name = "",
-        self.currency = "",
-        self.exchange = "",
-        self.last_price = 0.01,
+        self.name = ""
+        self.currency = ""
+        self.exchange = ""
+        self.last_price = 0.01
         self.timestamp = None
         self.active = True
         self.nb = 0
@@ -91,7 +91,7 @@ class Stock:
         else:
             cursor.execute(f"""
                 insert into stocks (code, name, currency, exchange, last_price, timestamp, active, nb, sell_price, buy_price)
-                    VALUES ('{self.code}', '', '{self.currency}', '{self.exchange}', {self.last_price},
+                    VALUES ('{self.code}', '{self.name}', '{self.currency}', '{self.exchange}', {self.last_price},
                         now(), {self.active}, {self.nb}, {self.sell_price}, {self.buy_price})
             """)
         database.conn.commit()
