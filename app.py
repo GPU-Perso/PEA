@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.btn_show_all_stocks.clicked.connect(self.show_all_stocks)    
         self.header.addWidget(self.btn_show_all_stocks)
 
-        self.btn_edit_stock = QPushButton("+")
+        self.btn_edit_stock = QPushButton("Add")
         self.btn_edit_stock.clicked.connect(lambda *args, id=None: self.edit_stock(id))
         self.header.addWidget(self.btn_edit_stock)
 
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         """)
 
     def show_all_stocks(self):
-        self.stocks = stock.load_stocks(2)
+        self.stocks = stock.load_stocks()
 
         for s in self.stocks:
             l = self.stocks_layout.get(s.code)
@@ -100,28 +100,36 @@ class MainWindow(QMainWindow):
 
             btn = QPushButton("Reload")
             btn.clicked.connect(lambda *args, s=s: self.reload_stock(s))
-            btn.setFixedWidth(100)
             stock_line.addWidget(btn)
             self.stocks_layout[s.code+"_button_reload"] = btn
 
+            btn = QPushButton("Modify")
+            btn.clicked.connect(lambda *args, s=s: self.edit_stock(s.code))
+            stock_line.addWidget(btn)
+            self.stocks_layout[s.code+"_button_modify"] = btn
+
     def reload_stock(self, s :stock.Stock):
         s.load()
-        self.stocks_layout[s.code+"_label_last_price"].setText(f"{s.last_price:.2f}")
+        self.stocks_layout[s.code+"_label_name"].setText(f"{s.name}")
+        self.stocks_layout[s.code+"_label_buy_price"].setText(f"{s.buy_price:.2f}" if s.buy_price else "")
         self.stocks_layout[s.code+"_label_buy_price_gap"].setText(f"{s.buy_price_gap*100:.2f}%")
+        self.stocks_layout[s.code+"_label_last_price"].setText(f"{s.last_price:.2f}")
+        self.stocks_layout[s.code+"_label_sell_price"].setText(f"{s.sell_price:.2f}" if s.sell_price else "")
         self.stocks_layout[s.code+"_label_sell_price_gap"].setText(f"{s.sell_price_gap*100:.2f}%")
-        self.stocks_layout[s.code+"_label_total_price"].setText(f"{s.total_price:.2f}")
         self.stocks_layout[s.code+"_label_nb"].setText(str(s.nb))
+        self.stocks_layout[s.code+"_label_total_price"].setText(f"{s.total_price:.2f}")
   
     def edit_stock(self, code=None):
         edit_window = EditWindow(code)
         edit_window.setWindowTitle("Edit stock")
-        #edit_window.setGeometry(100, 100, 400, 200)  # Définir la position et la taille de la fenêtre
         edit_window.exec()
 
 class EditWindow(QDialog):
     def __init__(self, code):
         super(EditWindow, self).__init__()
         self.stock = stock.Stock(code)
+        if code:
+            self.stock.load()
 
         layout = QVBoxLayout()
 
@@ -153,13 +161,13 @@ class EditWindow(QDialog):
 
         line_layout = QHBoxLayout()
         line_layout.addWidget(QLabel("Buy price"))
-        self.edit_buy_price = QLineEdit(str(self.stock.buy_price))
+        self.edit_buy_price = QLineEdit(str(self.stock.buy_price if self.stock.buy_price else ""))
         line_layout.addWidget(self.edit_buy_price)
         layout.addLayout(line_layout)
 
         line_layout = QHBoxLayout()
         line_layout.addWidget(QLabel("Sell price"))
-        self.edit_sell_price = QLineEdit(str(self.stock.sell_price))
+        self.edit_sell_price = QLineEdit(str(self.stock.sell_price) if self.stock.sell_price else "")
         line_layout.addWidget(self.edit_sell_price)
         layout.addLayout(line_layout)
 
@@ -173,6 +181,7 @@ class EditWindow(QDialog):
         layout.addLayout(line_layout)
 
         self.setLayout(layout)
+        self.setStyleSheet("""border: 1px solid;""")
 
     def save(self):
         if not self.stock.code and not self.edit_code.text():
@@ -188,6 +197,7 @@ class EditWindow(QDialog):
         self.stock.sell_price = self.edit_sell_price.text()
 
         self.stock.store()
+        self.close()
 
 app = QApplication(sys.argv)
 w = MainWindow()
