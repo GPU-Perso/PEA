@@ -2,6 +2,9 @@ from data.connectdb import Database
 import yfinance as yf
 from termcolor import colored
 
+import threading
+import time
+
 database = Database(host="localhost", database="pea_tomtom", user="postgres", password="postgres")
 
 class Stock:
@@ -40,6 +43,7 @@ class Stock:
             Total : {self.total_price} | Buy gap : {self.buy_price_gap} | Sell gap : {self.sell_price_gap}"""
 
     def load(self, data = None):
+        tic = time.perf_counter()
         if data is None:
             cursor = database.conn.cursor()
             cursor.execute(f"""
@@ -68,6 +72,9 @@ class Stock:
         self.currency = infos.basic_info.currency
         self.exchange = infos.basic_info.exchange
         self.last_price = infos.basic_info.last_price
+
+        toc = time.perf_counter()
+        print(f"{self.name} load time: {toc - tic:0.4f} seconds")
 
     def store(self):
         query = f"select count(*) from stocks where id={self.id}"
@@ -123,11 +130,25 @@ def load_stocks(limit = None) -> list:
     rows = cursor.fetchall()
     cursor.close()
 
+    tic = time.perf_counter()
+
+    threads = []
     for row in rows:
         s = Stock()
-        s.load(row)
-        s.store()
+        t = threading.Thread(target=s.load, args=(row,))
+        t.name =row[1]
+        threads.append(t)
+        t.start()
         stocks.append(s)
+
+    for t in threads:
+        t.join()
+    
+    for s in stocks:
+        s.store()
+
+    toc = time.perf_counter()
+    print(f"Total time: {toc - tic:0.4f} seconds")
 
     return stocks
 
