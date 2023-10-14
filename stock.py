@@ -3,7 +3,10 @@ import yfinance as yf
 from termcolor import colored
 
 import threading
+import concurrent.futures
 import time
+
+MULTITHREADS = False
 
 database = Database(host="localhost", database="pea_tomtom", user="postgres", password="postgres")
 
@@ -132,17 +135,27 @@ def load_stocks(limit = None) -> list:
 
     tic = time.perf_counter()
 
-    threads = []
-    for row in rows:
-        s = Stock()
-        t = threading.Thread(target=s.load, args=(row,))
-        t.name =row[1]
-        threads.append(t)
-        t.start()
-        stocks.append(s)
+    if MULTITHREADS:
+        threads = []
+        for row in rows:
+            s = Stock()
+            t = threading.Thread(target=s.load, args=(row,))
+            t.name =row[1]
+            threads.append(t)
+            t.start()
+            stocks.append(s)
 
-    for t in threads:
-        t.join()
+        for t in threads:
+            t.join()
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = []
+            for row in rows:
+                s = Stock()
+                stocks.append(s)
+                futures.append(
+                    executor.submit(s.load, row)
+                )
     
     for s in stocks:
         s.store()
