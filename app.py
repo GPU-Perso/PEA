@@ -137,6 +137,7 @@ class MainWindow(QMainWindow):
     # stock line data is fully updated but position is kept invariant
     def reload_stock(self, s :stock.Stock):
         s.load()
+        s.store()
         self.stocks_layout[s.code+"_label_name"].setText(f"{s.name}")
         self.stocks_layout[s.code+"_label_buy_price"].setText(f"{s.buy_price:.2f}" if s.buy_price else "")
         self.stocks_layout[s.code+"_label_buy_price_gap"].setText(f"{s.buy_price_gap*100:.2f}%")
