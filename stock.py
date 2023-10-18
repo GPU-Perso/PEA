@@ -45,7 +45,7 @@ class Stock:
         return f"""{self.code} | {self.name} | {self.currency} | {self.exchange} | {self.last_price} | {self.timestamp} | {self.active} | {self.nb} | {self.sell_price} | {self.buy_price} | {self.id}\n
             Total : {self.total_price} | Buy gap : {self.buy_price_gap} | Sell gap : {self.sell_price_gap}"""
 
-    def load(self, data = None):
+    def load(self, data = None, online=True):
         tic = time.perf_counter()
         if data is None:
             cursor = database.conn.cursor()
@@ -71,10 +71,11 @@ class Stock:
             self.buy_price = s[9]
             self.id = s[10]
 
-        infos = yf.Ticker(self.code)
-        self.currency = infos.basic_info.currency
-        self.exchange = infos.basic_info.exchange
-        self.last_price = infos.basic_info.last_price
+        if online:
+            infos = yf.Ticker(self.code)
+            self.currency = infos.basic_info.currency
+            self.exchange = infos.basic_info.exchange
+            self.last_price = infos.basic_info.last_price
 
         toc = time.perf_counter()
         print(f"{self.name} load time: {toc - tic:0.4f} seconds")
@@ -107,7 +108,7 @@ class Stock:
         database.conn.commit()
         cursor.close()
 
-def load_stocks(limit = None) -> list:
+def load_stocks(online=True, limit = None) -> list:
     stocks = []
     if not limit:
         query = """
@@ -139,7 +140,7 @@ def load_stocks(limit = None) -> list:
         threads = []
         for row in rows:
             s = Stock()
-            t = threading.Thread(target=s.load, args=(row,))
+            t = threading.Thread(target=s.load, args=(row, online))
             t.name =row[1]
             threads.append(t)
             t.start()
@@ -154,7 +155,7 @@ def load_stocks(limit = None) -> list:
                 s = Stock()
                 stocks.append(s)
                 futures.append(
-                    executor.submit(s.load, row)
+                    executor.submit(s.load, row, online)
                 )
     
     for s in stocks:

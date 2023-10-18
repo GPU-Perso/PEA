@@ -7,6 +7,7 @@ from PySide2.QtWidgets import (
 )
 from PySide2.QtCore import Qt
 import stock
+from apscheduler.schedulers.qt import QtScheduler
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,8 +19,16 @@ class MainWindow(QMainWindow):
 
         self.stocks_layout = {}
 
+        self.scheduler = QtScheduler()
+
+        # first load with online refresh
         self.show_all_stocks()
 
+        # regular background online refresh
+        self.scheduler.add_job(self.refresh_all_stocks, 'interval', seconds=300, name='refresh')
+        self.scheduler.start()
+
+    # main window header
     def setup_ui(self):
         self.main_layout = QVBoxLayout()
         widget = QWidget()
@@ -29,8 +38,7 @@ class MainWindow(QMainWindow):
         layout = QHBoxLayout()
         self.main_layout.addLayout(layout)
         widget = QWidget()
-        widget.setStyleSheet("""font-weight: bold;
-        """)
+        widget.setStyleSheet("""font-weight: bold;""")
         layout.addWidget(widget)
 
         self.header = QHBoxLayout()
@@ -46,7 +54,7 @@ class MainWindow(QMainWindow):
 
         self.btn_show_all_stocks = QPushButton("Reload")
         self.btn_show_all_stocks.setFixedWidth(100)
-        self.btn_show_all_stocks.clicked.connect(self.show_all_stocks)    
+        self.btn_show_all_stocks.clicked.connect(lambda *args, online=False: self.show_all_stocks(online))    
         self.header.addWidget(self.btn_show_all_stocks)
 
         self.btn_edit_stock = QPushButton("Add")
@@ -57,10 +65,23 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("""
         """)
 
-    def show_all_stocks(self):
-        self.stocks = stock.load_stocks()
-
+    # used for background online refresh
+    # stocks lines data is updated but positions are kept invariant
+    def refresh_all_stocks(self):
         for s in self.stocks:
+            self.reload_stock(s)
+
+    # destroy and rebuil all the stocks lines (data and positions)
+    # can be offline (faster) if the data is refreshed in background
+    def show_all_stocks(self, online=True):
+        # pause background refresh process to avoid collisions
+        if self.scheduler.running:
+            self.scheduler.pause()
+
+        # load all stocks from database and possibly from the Internet
+        self.stocks = stock.load_stocks(online)
+        for s in self.stocks:
+            # delete UI stock line
             l = self.stocks_layout.get(s.code)
             if l:
                 ui_utils.clear_layout(l)
@@ -108,25 +129,36 @@ class MainWindow(QMainWindow):
             stock_line.addWidget(btn)
             self.stocks_layout[s.code+"_button_modify"] = btn
 
+        # resume background refresh process
+        if self.scheduler.running:
+            self.scheduler.resume()
+
+    # reload one stock
+    # stock line data is fully updated but position is kept invariant
     def reload_stock(self, s :stock.Stock):
         s.load()
         self.stocks_layout[s.code+"_label_name"].setText(f"{s.name}")
         self.stocks_layout[s.code+"_label_buy_price"].setText(f"{s.buy_price:.2f}" if s.buy_price else "")
         self.stocks_layout[s.code+"_label_buy_price_gap"].setText(f"{s.buy_price_gap*100:.2f}%")
+        ui_utils.colorize_label(self.stocks_layout[s.code+"_label_buy_price_gap"], value=s.buy_price_gap, max=-0.05, color="red")
         self.stocks_layout[s.code+"_label_last_price"].setText(f"{s.last_price:.2f}")
         self.stocks_layout[s.code+"_label_sell_price"].setText(f"{s.sell_price:.2f}" if s.sell_price else "")
         self.stocks_layout[s.code+"_label_sell_price_gap"].setText(f"{s.sell_price_gap*100:.2f}%")
+        ui_utils.colorize_label(self.stocks_layout[s.code+"_label_sell_price_gap"], value=s.sell_price_gap, min=0.05, color="green")
         self.stocks_layout[s.code+"_label_nb"].setText(str(s.nb))
         self.stocks_layout[s.code+"_label_total_price"].setText(f"{s.total_price:.2f}")
   
+    # edit or create a stock data
     def edit_stock(self, code=None):
         edit_window = EditWindow(code)
         edit_window.setWindowTitle("Edit stock")
         edit_window.exec()
 
+# stock creation and edition window
 class EditWindow(QDialog):
     def __init__(self, code):
         super(EditWindow, self).__init__()
+        
         self.stock = stock.Stock(code)
         if code:
             self.stock.load()
