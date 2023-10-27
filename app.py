@@ -22,10 +22,10 @@ class MainWindow(QMainWindow):
         self.scheduler = QtScheduler()
 
         # first load with online refresh
-        self.show_all_stocks()
+        self.show_all_stocks(False)
 
         # regular background online refresh
-        self.scheduler.add_job(self.refresh_all_stocks, 'interval', seconds=300, name='refresh')
+        self.scheduler.add_job(self.refresh_all_stocks, 'interval', seconds=60, name='refresh')
         self.scheduler.start()
 
     # main window header
