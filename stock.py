@@ -72,10 +72,13 @@ class Stock:
             self.id = s[10]
 
         if online:
-            infos = yf.Ticker(self.code)
-            self.currency = infos.basic_info.currency
-            self.exchange = infos.basic_info.exchange
-            self.last_price = infos.basic_info.last_price
+            try:
+                infos = yf.Ticker(self.code)
+                self.currency = infos.basic_info.currency
+                self.exchange = infos.basic_info.exchange
+                self.last_price = infos.basic_info.last_price
+            except (NameError, KeyError):
+                print(f"Error : {self.name} online load failed")
 
         toc = time.perf_counter()
         print(f"{self.name} load time: {toc - tic:0.4f} seconds")
