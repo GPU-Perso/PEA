@@ -106,7 +106,7 @@ class Stock:
             cursor.execute(f"""
                 insert into stocks (code, name, currency, exchange, last_price, timestamp, active, nb, sell_price, buy_price)
                     VALUES ('{self.code}', '{self.name}', '{self.currency}', '{self.exchange}', {self.last_price},
-                        now(), {self.active}, {self.nb}, {self.sell_price}, {self.buy_price})
+                        now(), {self.active}, {self.nb}, {self.sell_price or "Null"}, {self.buy_price or "Null"})
             """)
         database.conn.commit()
         cursor.close()

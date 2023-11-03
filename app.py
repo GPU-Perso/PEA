@@ -3,7 +3,7 @@ import utils.ui_utils as ui_utils
 from PySide2.QtWidgets import (
     QMainWindow, QApplication, QBoxLayout, QHBoxLayout, QVBoxLayout, QWidget,
     QLabel, QCheckBox, QComboBox, QListWidget, QLineEdit,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QPushButton, QDialog
+    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QPushButton, QDialog, QScrollArea
 )
 from PySide2.QtCore import Qt
 import stock
@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
-
+        
         layout = QHBoxLayout()
         self.main_layout.addLayout(layout)
         widget = QWidget()
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
             self.stocks_layout[s.code+"_label_last_price"] = ui_utils.create_label(text=str(s.last_price), width=80, alignment=Qt.AlignRight, format=":.2f")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_last_price"])
 
-            self.stocks_layout[s.code+"_label_sell_price"] = ui_utils.create_label(text=str(s.sell_price), width=80, alignment=Qt.AlignRight, format=":.2f")
+            self.stocks_layout[s.code+"_label_sell_price"] = ui_utils.create_label(text=s.sell_price, width=80, alignment=Qt.AlignRight, format=":.2f")
             stock_line.addWidget(self.stocks_layout[s.code+"_label_sell_price"])
 
             self.stocks_layout[s.code+"_label_sell_price_gap"] = ui_utils.create_label(text=f"{s.sell_price_gap*100:.2f}%", width=80, alignment=Qt.AlignRight)
